@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Chat</title>
+</head>
+
+<body>
+    <h1>WebSocket Chat</h1>
+    <div>
+        <input type="text" id="messageInput" autocomplete="off">
+        <button onclick="sendMessage()" id="sendBtn">Send</button>
+        <div style="margin-top: 1rem;">
+            <button onclick="disconnect()" id="disconnectBtn">Disconnect</button>
+            <button onclick="reconnect()" id="reconnectBtn">Reconnect</button>
+        </div>
+    </div>
+    <ul id="messages"></ul>
+
+    <script>
+        const clientId = Math.floor(Math.random() * 1000);
+        const disconnectBtn = document.querySelector("#disconnectBtn");
+        const reconnectBtn = document.querySelector("#reconnectBtn");
+        const input = document.getElementById("messageInput");
+        const messages = document.getElementById('messages');
+        const sendBtn = document.querySelector("#sendBtn");
+        let ws = connectWS();
+        reconnectBtn.disabled = true;
+
+        function onmessageHandler(event) {
+            const message = document.createElement('li');
+            message.textContent = event.data;
+            messages.appendChild(message);
+        }
+
+        function connectWS() {
+            const ws = new WebSocket(`ws://localhost:8000/ws/${clientId}`);
+            ws.onmessage = onmessageHandler;
+            return ws;
+        }
+
+        function sendMessage() {
+            ws.send(input.value);
+            input.value = "";
+        }
+
+        function disconnect() {
+            ws.close()
+            input.value = "";
+            messages.innerText = "";
+            disconnectBtn.disabled = true;
+            reconnectBtn.disabled = false;
+            sendBtn.disabled = true;
+        }
+
+        function reconnect() {
+            ws = connectWS();
+            disconnectBtn.disabled = false;
+            reconnectBtn.disabled = true;
+            sendBtn.disabled = false;
+        }
+    </script>
+
+</body>
+
+</html>
